@@ -12,9 +12,11 @@ use Phalanx\Panoply\Agent as AgentContract;
 use Phalanx\Surreal\SurrealBundle;
 use Phalanx\Theatron\Stage\StageConfig;
 use Phalanx\Theatron\TheatronApp;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
+#[Group('harness')]
 final class StarterSmokeTest extends TestCase
 {
     #[Test]
