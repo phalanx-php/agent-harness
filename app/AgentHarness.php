@@ -13,7 +13,13 @@ final class AgentHarness
     /** @param array<string, mixed> $context */
     public static function app(array $context = []): HarnessBuilder
     {
-        return Harness::app($context)
+        $builder = Harness::app($context)
             ->agent(Agent::class);
+
+        if ($context['HARNESS_DURABLE'] ?? false) {
+            $builder->durable();
+        }
+
+        return $builder;
     }
 }
