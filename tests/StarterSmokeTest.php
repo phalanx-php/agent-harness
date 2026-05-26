@@ -11,6 +11,7 @@ use Phalanx\Harness\HarnessBuilder;
 use Phalanx\Panoply\Agent as AgentContract;
 use Phalanx\Surreal\SurrealBundle;
 use Phalanx\Theatron\Stage\StageConfig;
+use Phalanx\Theatron\TheatronApp;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -35,6 +36,23 @@ final class StarterSmokeTest extends TestCase
     public function appFactoryBuildsHarnessBuilder(): void
     {
         self::assertInstanceOf(HarnessBuilder::class, AgentHarness::app());
+    }
+
+    #[Test]
+    public function appFactoryBuildProducesTheatronApp(): void
+    {
+        $stream = fopen('php://memory', 'w+');
+        assert(is_resource($stream));
+
+        $app = AgentHarness::app();
+        $app->stageConfig(new StageConfig(
+            handleInput: false,
+            defaultExitHandler: false,
+            stream: $stream,
+            env: ['COLUMNS' => '80', 'LINES' => '24'],
+        ));
+
+        self::assertInstanceOf(TheatronApp::class, $app->build());
     }
 
     #[Test]
