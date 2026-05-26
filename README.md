@@ -42,7 +42,7 @@ php bin/harness
 | `HARNESS_DURABLE` | bool | `false` | Enable Surreal-backed durable mode |
 | `HARNESS_SESSION_ID` | string\|null | — | Session ID to resume (durable mode only) |
 
-When `HARNESS_DURABLE=true`, SurrealDB config from `phalanx-php/surreal` applies (`SURREAL_ENDPOINT`, `SURREAL_NAMESPACE`, `SURREAL_DATABASE`, etc). See `.env.example` for the full set.
+When `HARNESS_DURABLE=true`, SurrealDB config from `phalanx-php/surreal` applies (`SURREAL_ENDPOINT`, `SURREAL_NAMESPACE`, `SURREAL_DATABASE`, etc). See `.env.example` for the common keys.
 
 ## Project Shape
 
@@ -107,7 +107,7 @@ final class AgentDashboard implements Component
             panel('[bold]Olympus[/bold]', column(
                 row(
                     text('[cyan]Themistocles[/cyan]')->size(Size::fr(1)),
-                    text("[yellow]{$status}[/yellow]")->align(Align::Right),
+                    text("[yellow]{$status}[/yellow]")->align(Align::End),
                 ),
                 divider(),
                 text("Active tasks: {$tasks}"),
@@ -136,8 +136,8 @@ final class Shell implements Component
     public function __invoke(RenderContext $ctx): Renderable
     {
         return row(
-            mount(Sidebar::class)->size(Size::fixed(24)),
-            mount(AgentDashboard::class)->size(Size::fill()),
+            column(mount(Sidebar::class))->size(Size::fixed(24)),
+            column(mount(AgentDashboard::class))->size(Size::fill()),
         );
     }
 }
@@ -156,10 +156,10 @@ Size::percent(50)         // 50% of container
 Border::Rounded           // rounded corners
 Border::Heavy             // heavy box drawing
 
-Align::Left | Align::Center | Align::Right
+Align::Start | Align::Center | Align::End
 
 Padding::all(1)           // 1 cell on all sides
-Padding::h(2)->v(1)       // horizontal 2, vertical 1
+Padding::of(1, 2, 1, 2)  // top 1, right 2, bottom 1, left 2
 ```
 
 ### Text Styling

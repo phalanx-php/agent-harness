@@ -6,7 +6,6 @@ namespace App\AgentHarness\Agents\Assistant;
 
 use OpenSwoole\Coroutine;
 use OpenSwoole\Coroutine\System;
-use Phalanx\Grammata\Task\ReadFile;
 use Phalanx\Panoply\Agent as AgentContract;
 use Phalanx\Panoply\Capabilities;
 use Phalanx\Panoply\Capability;
