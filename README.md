@@ -1,6 +1,6 @@
 # AgentHarness
 
-A Phalanx starter app for building terminal agent harnesses. OpenSwoole-native, supervised by Aegis, rendered by Theatron, optionally durable via Agora + SurrealDB.
+A Phalanx starter app for building terminal agent harnesses. Swoole-native, supervised by Aegis, rendered by Theatron, optionally durable via Agora + SurrealDB.
 
 ## Layer Stack
 
