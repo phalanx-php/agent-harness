@@ -4,6 +4,52 @@
     "type": "project",
     "license": "MIT",
     "bin": ["bin/collab"],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/phalanx-php/phalanx-theatron.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/phalanx-php/phalanx-aegis.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/phalanx-php/phalanx-athena.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/phalanx-php/phalanx-grammata.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/phalanx-php/phalanx-themis.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/phalanx-php/phalanx-iris.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/phalanx-php/phalanx-styx.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/phalanx-php/phalanx-surreal.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/phalanx-php/phalanx-hermes.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/phalanx-php/phalanx-stoa.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/phalanx-php/phalanx-panoply.git"
+        }
+    ],
     "require": {
         "php": "^8.4",
         "ext-mbstring": "*",
