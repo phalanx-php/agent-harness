@@ -12,6 +12,8 @@ use Phalanx\Theatron\Collab\Participants\Collaborator;
 use Phalanx\Theatron\Collab\Plans\Activity;
 use Phalanx\Theatron\Collab\Plans\WorkItem;
 use Phalanx\Theatron\Collab\Plans\WorkPlanItem;
+use Phalanx\Theatron\Collab\Plans\WorkResult;
+use Phalanx\Theatron\Collab\Prompts\FilePrompt;
 use Phalanx\Theatron\Collab\Prompts\PromptSource;
 use Phalanx\Theatron\Collab\State\CollabStore;
 use Phalanx\Theatron\Collab\WorkContext;
@@ -46,6 +48,22 @@ final class StarterSmokeTest extends TestCase
     }
 
     #[Test]
+    public function shippedAssistantPromptFileIsExecutable(): void
+    {
+        $scope = $this->createStub(TaskScope::class);
+        $scope->method('call')->willReturnCallback(static fn(\Closure $fn): mixed => $fn());
+        $agent = new Agent(new FilePrompt(dirname(__DIR__) . '/app/Agents/Assistant/prompt.md'));
+        $item = WorkPlanItem::pending(new WorkItem(Activity::Thinking, 'Use shipped prompt', id: 'work_prompt'));
+        $ctx = new WorkContext($scope, new CollabStore());
+        $result = self::insideCoroutine(static fn(): WorkResult => $agent($item, $ctx));
+
+        self::assertSame('Assistant received: Use shipped prompt', $result->summary);
+        self::assertIsArray($result->payload);
+        self::assertStringStartsWith('file:', $result->payload['instructions']);
+        self::assertStringContainsString('concise assistant', $result->payload['prompt']);
+    }
+
+    #[Test]
     public function appFactoryBuildsCollabBuilder(): void
     {
         self::assertInstanceOf(CollabBuilder::class, AgentCollab::app());
@@ -73,7 +91,7 @@ final class StarterSmokeTest extends TestCase
     {
         $offenders = [];
 
-        foreach (self::appFiles() as $file) {
+        foreach (self::publicSurfaceFiles() as $file) {
             $source = file_get_contents($file);
             self::assertIsString($source);
 
@@ -90,10 +108,15 @@ final class StarterSmokeTest extends TestCase
     /**
      * @return list<string>
      */
-    private static function appFiles(): array
+    private static function publicSurfaceFiles(): array
     {
-        $files = [];
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(dirname(__DIR__) . '/app'));
+        $root = dirname(__DIR__);
+        $files = [
+            $root . '/README.md',
+            $root . '/bin/collab',
+            $root . '/composer.json',
+        ];
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root . '/app'));
 
         foreach ($iterator as $file) {
             if ($file->isFile() && $file->getExtension() === 'php') {
@@ -104,6 +127,26 @@ final class StarterSmokeTest extends TestCase
         sort($files);
 
         return $files;
+    }
+
+    private static function insideCoroutine(\Closure $callback): mixed
+    {
+        $result = null;
+        $error = null;
+
+        \Swoole\Coroutine\run(static function () use ($callback, &$result, &$error): void {
+            try {
+                $result = $callback();
+            } catch (\Throwable $e) {
+                $error = $e;
+            }
+        });
+
+        if ($error !== null) {
+            throw $error;
+        }
+
+        return $result;
     }
 }
 
