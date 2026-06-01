@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace App\AgentCollab;
 
+use App\AgentCollab\Agents\Assistant\Agent;
+use Phalanx\Theatron\Collab\Apps\CollabBuilder;
+use Phalanx\Theatron\Collab\Prompts\FilePrompt;
 use Phalanx\Theatron\Theatron;
-use Phalanx\Theatron\Tui\Apps\TheatronBuilder;
 
 final class AgentCollab
 {
     /** @param array<string, mixed> $context */
-    public static function app(array $context = []): TheatronBuilder
+    public static function app(array $context = []): CollabBuilder
     {
-        return Theatron::app($context)
-            ->screens([AgentScreen::class]);
+        return Theatron::collab($context)
+            ->primary(new Agent(new FilePrompt(__DIR__ . '/Agents/Assistant/prompt.md')));
     }
 }
