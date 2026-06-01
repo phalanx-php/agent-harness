@@ -2,21 +2,19 @@
 
 declare(strict_types=1);
 
-namespace App\AgentHarness\Tests;
+namespace App\AgentCollab\Tests;
 
-use App\AgentHarness\AgentHarness;
-use App\AgentHarness\Agents\Assistant\Agent;
-use Phalanx\Harness\AgoraServiceBundle;
-use Phalanx\Harness\HarnessBuilder;
+use App\AgentCollab\AgentCollab;
+use App\AgentCollab\Agents\Assistant\Agent;
 use Phalanx\Panoply\Agent as AgentContract;
-use Phalanx\Surreal\SurrealBundle;
-use Phalanx\Theatron\Stage\StageConfig;
-use Phalanx\Theatron\TheatronApp;
+use Phalanx\Theatron\Tui\Apps\TheatronApp;
+use Phalanx\Theatron\Tui\Apps\TheatronBuilder;
+use Phalanx\Theatron\Tui\Drawing\StageConfig;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-#[Group('harness')]
+#[Group('collab')]
 final class StarterSmokeTest extends TestCase
 {
     #[Test]
@@ -25,7 +23,7 @@ final class StarterSmokeTest extends TestCase
         $agent = new Agent();
 
         self::assertSame('assistant', $agent->id);
-        self::assertStringContainsString('Phalanx AgentHarness', $agent->purpose);
+        self::assertStringContainsString('Phalanx AgentCollab', $agent->purpose);
     }
 
     #[Test]
@@ -35,9 +33,9 @@ final class StarterSmokeTest extends TestCase
     }
 
     #[Test]
-    public function appFactoryBuildsHarnessBuilder(): void
+    public function appFactoryBuildsTheatronBuilder(): void
     {
-        self::assertInstanceOf(HarnessBuilder::class, AgentHarness::app());
+        self::assertInstanceOf(TheatronBuilder::class, AgentCollab::app());
     }
 
     #[Test]
@@ -46,7 +44,7 @@ final class StarterSmokeTest extends TestCase
         $stream = fopen('php://memory', 'w+');
         assert(is_resource($stream));
 
-        $app = AgentHarness::app();
+        $app = AgentCollab::app();
         $app->stageConfig(new StageConfig(
             handleInput: false,
             defaultExitHandler: false,
@@ -55,32 +53,5 @@ final class StarterSmokeTest extends TestCase
         ));
 
         self::assertInstanceOf(TheatronApp::class, $app->build());
-    }
-
-    #[Test]
-    public function appFactoryWithDurableContextRegistersAgoraBundles(): void
-    {
-        $stream = fopen('php://memory', 'w+');
-        assert(is_resource($stream));
-
-        $builder = AgentHarness::app(['HARNESS_DURABLE' => true]);
-        $builder->stageConfig(new StageConfig(
-            handleInput: false,
-            defaultExitHandler: false,
-            stream: $stream,
-            env: ['COLUMNS' => '80', 'LINES' => '24'],
-        ));
-        $builder->build();
-
-        $providers = $builder->registeredProviders();
-
-        self::assertNotNull(array_find(
-            $providers,
-            static fn(mixed $p): bool => $p instanceof SurrealBundle,
-        ));
-        self::assertNotNull(array_find(
-            $providers,
-            static fn(mixed $p): bool => $p instanceof AgoraServiceBundle,
-        ));
     }
 }

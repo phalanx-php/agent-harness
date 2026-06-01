@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\AgentHarness\Config;
+namespace App\AgentCollab\Config;
 
 use Phalanx\Themis\Config;
 use Phalanx\Themis\Issue;

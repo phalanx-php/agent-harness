@@ -15,7 +15,7 @@ if (!is_file($autoload)) {
 require $autoload;
 
 spl_autoload_register(static function (string $class): void {
-    $prefix = 'App\\AgentHarness\\';
+    $prefix = 'App\\AgentCollab\\';
     if (!str_starts_with($class, $prefix)) {
         return;
     }

@@ -2,10 +2,8 @@
 
 declare(strict_types=1);
 
-namespace App\AgentHarness\Agents\Assistant;
+namespace App\AgentCollab\Agents\Assistant;
 
-use OpenSwoole\Coroutine;
-use OpenSwoole\Coroutine\System;
 use Phalanx\Panoply\Agent as AgentContract;
 use Phalanx\Panoply\Capabilities;
 use Phalanx\Panoply\Capability;
@@ -61,7 +59,7 @@ final class Agent implements AgentContract
 
     private static function loadPrompt(string $path): string
     {
-        $content = Coroutine::getCid() > 0 ? System::readFile($path) : file_get_contents($path);
+        $content = file_get_contents($path);
 
         if (!is_string($content)) {
             throw new RuntimeException("Unable to read agent prompt: {$path}");
