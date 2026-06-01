@@ -6,12 +6,17 @@ namespace App\AgentCollab\Tests;
 
 use App\AgentCollab\AgentCollab;
 use App\AgentCollab\Agents\Assistant\Agent;
+use Phalanx\Scope\ExecutionScope;
 use Phalanx\Scope\TaskScope;
+use Phalanx\Testing\PhalanxTestCase;
 use Phalanx\Theatron\Collab\Apps\CollabBuilder;
+use Phalanx\Theatron\Collab\Apps\CollabRuntime;
+use Phalanx\Theatron\Collab\Boundaries\InputPromptSubmitter;
 use Phalanx\Theatron\Collab\Participants\Collaborator;
 use Phalanx\Theatron\Collab\Plans\Activity;
 use Phalanx\Theatron\Collab\Plans\WorkItem;
 use Phalanx\Theatron\Collab\Plans\WorkPlanItem;
+use Phalanx\Theatron\Collab\Plans\WorkPlanStatus;
 use Phalanx\Theatron\Collab\Plans\WorkResult;
 use Phalanx\Theatron\Collab\Prompts\FilePrompt;
 use Phalanx\Theatron\Collab\Prompts\PromptSource;
@@ -21,10 +26,9 @@ use Phalanx\Theatron\Tui\Apps\TheatronApp;
 use Phalanx\Theatron\Tui\Drawing\StageConfig;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
 
 #[Group('collab')]
-final class StarterSmokeTest extends TestCase
+final class StarterSmokeTest extends PhalanxTestCase
 {
     #[Test]
     public function agentUsesPromptSourceInstructions(): void
@@ -87,6 +91,41 @@ final class StarterSmokeTest extends TestCase
     }
 
     #[Test]
+    public function appFactoryRuntimeAcceptsInputAndProjectsCompletionState(): void
+    {
+        $stream = fopen('php://memory', 'w+');
+        self::assertIsResource($stream);
+
+        $builder = AgentCollab::app(['APP_ENV' => 'test']);
+        $builder->stageConfig(new StageConfig(
+            handleInput: false,
+            defaultExitHandler: false,
+            stream: $stream,
+            env: ['COLUMNS' => '80', 'LINES' => '24'],
+        ));
+        $app = $builder->build();
+        $testApp = $this->testApp([], ...$builder->resolvedProviders($app));
+
+        $testApp->application->scoped(static function (ExecutionScope $scope): void {
+            $submit = $scope->service(InputPromptSubmitter::class);
+            $runtime = $scope->service(CollabRuntime::class);
+            $store = $scope->service(CollabStore::class);
+
+            self::assertInstanceOf(InputPromptSubmitter::class, $submit);
+            self::assertInstanceOf(CollabRuntime::class, $runtime);
+            self::assertInstanceOf(CollabStore::class, $store);
+
+            $submit('Summarize the roadmap');
+            $status = $runtime->tick($scope);
+
+            self::assertSame(WorkPlanStatus::Complete, $status);
+            self::assertSame(WorkPlanStatus::Complete, $store->workPlan->plan->status);
+            self::assertSame('Summarize the roadmap', $store->messages->envelopes[0]->payload);
+            self::assertSame('Assistant received: Summarize the roadmap', $store->messages->entries[2]->summary);
+        });
+    }
+
+    #[Test]
     public function publicAppCodeDoesNotExposeProviderRuntimeImports(): void
     {
         $offenders = [];
@@ -103,6 +142,18 @@ final class StarterSmokeTest extends TestCase
         }
 
         self::assertSame([], $offenders, implode("\n", $offenders));
+    }
+
+    #[Test]
+    public function composerRequireSurfaceNamesOnlyTheatronFromPhalanxPackages(): void
+    {
+        $composer = json_decode(self::read(dirname(__DIR__) . '/composer.json'), true, flags: JSON_THROW_ON_ERROR);
+        $packages = array_values(array_filter(
+            array_keys($composer['require']),
+            static fn (string $package): bool => str_starts_with($package, 'phalanx-php/'),
+        ));
+
+        self::assertSame(['phalanx-php/theatron'], $packages);
     }
 
     /**
@@ -127,6 +178,14 @@ final class StarterSmokeTest extends TestCase
         sort($files);
 
         return $files;
+    }
+
+    private static function read(string $file): string
+    {
+        $source = file_get_contents($file);
+        self::assertIsString($source);
+
+        return $source;
     }
 
     private static function insideCoroutine(\Closure $callback): mixed
