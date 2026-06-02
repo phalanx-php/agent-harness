@@ -1,9 +1,9 @@
 {
-    "name": "phalanx-php/agent-collab-starter",
-    "description": "Phalanx AgentCollab starter kit",
+    "name": "phalanx-php/agent-harness-starter",
+    "description": "Phalanx AgentHarness starter kit",
     "type": "project",
     "license": "MIT",
-    "bin": ["bin/collab"],
+    "bin": ["bin/agent-harness"],
     "repositories": [
         {
             "type": "vcs",
@@ -66,12 +66,12 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\AgentCollab\\": "app/"
+            "App\\AgentHarness\\": "app/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "App\\AgentCollab\\Tests\\": "tests/"
+            "App\\AgentHarness\\Tests\\": "tests/"
         }
     },
     "config": {

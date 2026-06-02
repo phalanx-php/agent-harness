@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\AgentCollab\Tests;
+namespace App\AgentHarness\Tests;
 
-use App\AgentCollab\AgentCollab;
-use App\AgentCollab\Agents\Assistant\Agent;
+use App\AgentHarness\AgentHarness;
+use App\AgentHarness\Agents\Assistant\Agent;
 use Phalanx\Scope\ExecutionScope;
 use Phalanx\Scope\TaskScope;
 use Phalanx\Testing\PhalanxTestCase;
-use Phalanx\Theatron\Collab\Apps\CollabBuilder;
-use Phalanx\Theatron\Collab\Apps\CollabRuntime;
+use Phalanx\Theatron\Collab\Apps\AgentHarnessBuilder;
+use Phalanx\Theatron\Collab\Apps\AgentHarnessRuntime;
 use Phalanx\Theatron\Collab\Boundaries\InputPromptSubmitter;
-use Phalanx\Theatron\Collab\Participants\Collaborator;
+use Phalanx\Theatron\Collab\Participants\AgentParticipant;
 use Phalanx\Theatron\Collab\Plans\Activity;
 use Phalanx\Theatron\Collab\Plans\WorkItem;
 use Phalanx\Theatron\Collab\Plans\WorkPlanItem;
@@ -20,14 +20,14 @@ use Phalanx\Theatron\Collab\Plans\WorkPlanStatus;
 use Phalanx\Theatron\Collab\Plans\WorkResult;
 use Phalanx\Theatron\Collab\Prompts\FilePrompt;
 use Phalanx\Theatron\Collab\Prompts\PromptSource;
-use Phalanx\Theatron\Collab\State\CollabStore;
+use Phalanx\Theatron\Collab\State\AgentHarnessStore;
 use Phalanx\Theatron\Collab\WorkContext;
 use Phalanx\Theatron\Tui\Apps\TheatronApp;
 use Phalanx\Theatron\Tui\Drawing\StageConfig;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 
-#[Group('collab')]
+#[Group('agent-harness')]
 final class StarterSmokeTest extends PhalanxTestCase
 {
     #[Test]
@@ -35,20 +35,20 @@ final class StarterSmokeTest extends PhalanxTestCase
     {
         $agent = new Agent(new StarterPromptSource());
         $item = WorkPlanItem::pending(new WorkItem(Activity::Thinking, 'Draft a plan', id: 'work_test'));
-        $ctx = new WorkContext($this->createStub(TaskScope::class), new CollabStore());
+        $ctx = new WorkContext($this->createStub(TaskScope::class), new AgentHarnessStore());
         $result = $agent($item, $ctx);
 
         self::assertSame('assistant', $agent->id);
         self::assertSame('Assistant', $agent->name);
         self::assertSame('Assistant received: Draft a plan', $result->summary);
         self::assertIsArray($result->payload);
-        self::assertSame('Phalanx AgentCollab instructions', $result->payload['prompt']);
+        self::assertSame('Phalanx AgentHarness instructions', $result->payload['prompt']);
     }
 
     #[Test]
     public function agentImplementsCollabContract(): void
     {
-        self::assertInstanceOf(Collaborator::class, new Agent(new StarterPromptSource()));
+        self::assertInstanceOf(AgentParticipant::class, new Agent(new StarterPromptSource()));
     }
 
     #[Test]
@@ -58,7 +58,7 @@ final class StarterSmokeTest extends PhalanxTestCase
         $scope->method('call')->willReturnCallback(static fn(\Closure $fn): mixed => $fn());
         $agent = new Agent(new FilePrompt(dirname(__DIR__) . '/app/Agents/Assistant/prompt.md'));
         $item = WorkPlanItem::pending(new WorkItem(Activity::Thinking, 'Use shipped prompt', id: 'work_prompt'));
-        $ctx = new WorkContext($scope, new CollabStore());
+        $ctx = new WorkContext($scope, new AgentHarnessStore());
         $result = self::insideCoroutine(static fn(): WorkResult => $agent($item, $ctx));
 
         self::assertSame('Assistant received: Use shipped prompt', $result->summary);
@@ -68,9 +68,9 @@ final class StarterSmokeTest extends PhalanxTestCase
     }
 
     #[Test]
-    public function appFactoryBuildsCollabBuilder(): void
+    public function appFactoryBuildsAgentHarnessBuilder(): void
     {
-        self::assertInstanceOf(CollabBuilder::class, AgentCollab::app());
+        self::assertInstanceOf(AgentHarnessBuilder::class, AgentHarness::app());
     }
 
     #[Test]
@@ -79,7 +79,7 @@ final class StarterSmokeTest extends PhalanxTestCase
         $stream = fopen('php://memory', 'w+');
         self::assertIsResource($stream);
 
-        $app = AgentCollab::app();
+        $app = AgentHarness::app();
         $app->stageConfig(new StageConfig(
             handleInput: false,
             defaultExitHandler: false,
@@ -96,7 +96,7 @@ final class StarterSmokeTest extends PhalanxTestCase
         $stream = fopen('php://memory', 'w+');
         self::assertIsResource($stream);
 
-        $builder = AgentCollab::app(['APP_ENV' => 'test']);
+        $builder = AgentHarness::app(['APP_ENV' => 'test']);
         $builder->stageConfig(new StageConfig(
             handleInput: false,
             defaultExitHandler: false,
@@ -108,12 +108,12 @@ final class StarterSmokeTest extends PhalanxTestCase
 
         $testApp->application->scoped(static function (ExecutionScope $scope): void {
             $submit = $scope->service(InputPromptSubmitter::class);
-            $runtime = $scope->service(CollabRuntime::class);
-            $store = $scope->service(CollabStore::class);
+            $runtime = $scope->service(AgentHarnessRuntime::class);
+            $store = $scope->service(AgentHarnessStore::class);
 
             self::assertInstanceOf(InputPromptSubmitter::class, $submit);
-            self::assertInstanceOf(CollabRuntime::class, $runtime);
-            self::assertInstanceOf(CollabStore::class, $store);
+            self::assertInstanceOf(AgentHarnessRuntime::class, $runtime);
+            self::assertInstanceOf(AgentHarnessStore::class, $store);
 
             $submit('Summarize the roadmap');
             $status = $runtime->tick($scope);
@@ -148,10 +148,12 @@ final class StarterSmokeTest extends PhalanxTestCase
     public function composerRequireSurfaceNamesOnlyTheatronFromPhalanxPackages(): void
     {
         $composer = json_decode(self::read(dirname(__DIR__) . '/composer.json'), true, flags: JSON_THROW_ON_ERROR);
-        $packages = array_values(array_filter(
-            array_keys($composer['require']),
-            static fn (string $package): bool => str_starts_with($package, 'phalanx-php/'),
-        ));
+        $packages = [];
+        foreach (array_keys($composer['require']) as $package) {
+            if (is_string($package) && str_starts_with($package, 'phalanx-php/')) {
+                $packages[] = $package;
+            }
+        }
 
         self::assertSame(['phalanx-php/theatron'], $packages);
     }
@@ -164,7 +166,7 @@ final class StarterSmokeTest extends PhalanxTestCase
         $root = dirname(__DIR__);
         $files = [
             $root . '/README.md',
-            $root . '/bin/collab',
+            $root . '/bin/agent-harness',
             $root . '/composer.json',
         ];
         $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root . '/app'));
@@ -217,6 +219,6 @@ final class StarterPromptSource implements PromptSource
 
     public function __invoke(TaskScope $scope): string
     {
-        return 'Phalanx AgentCollab instructions';
+        return 'Phalanx AgentHarness instructions';
     }
 }

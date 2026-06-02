@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\AgentCollab\Agents\Assistant;
+namespace App\AgentHarness\Agents\Assistant;
 
-use Phalanx\Theatron\Collab\Participants\Collaborator;
+use Phalanx\Theatron\Collab\Participants\AgentParticipant;
 use Phalanx\Theatron\Collab\Plans\WorkPlanItem;
 use Phalanx\Theatron\Collab\Plans\WorkResult;
 use Phalanx\Theatron\Collab\Prompts\PromptSource;
 use Phalanx\Theatron\Collab\WorkContext;
 
-final class Agent implements Collaborator
+final class Agent implements AgentParticipant
 {
     public string $id {
         get => 'assistant';
