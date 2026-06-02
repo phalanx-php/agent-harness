@@ -3,53 +3,24 @@
     "description": "Phalanx AgentHarness starter kit",
     "type": "project",
     "license": "MIT",
-    "bin": ["bin/agent-harness"],
-    "repositories": [
+    "keywords": [
+        "agent",
+        "agent-harness",
+        "phalanx",
+        "swoole",
+        "tui"
+    ],
+    "homepage": "https://github.com/phalanx-php/agent-harness-starter",
+    "authors": [
         {
-            "type": "vcs",
-            "url": "https://github.com/phalanx-php/phalanx-theatron.git"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/phalanx-php/phalanx-aegis.git"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/phalanx-php/phalanx-athena.git"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/phalanx-php/phalanx-grammata.git"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/phalanx-php/phalanx-themis.git"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/phalanx-php/phalanx-iris.git"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/phalanx-php/phalanx-styx.git"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/phalanx-php/phalanx-surreal.git"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/phalanx-php/phalanx-hermes.git"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/phalanx-php/phalanx-stoa.git"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/phalanx-php/phalanx-panoply.git"
+            "name": "Jonathan Havens",
+            "email": "mail@phalanx-php.com"
         }
     ],
+    "support": {
+        "source": "https://github.com/phalanx-php/agent-harness-starter"
+    },
+    "bin": ["bin/agent-harness"],
     "require": {
         "php": "^8.4",
         "ext-mbstring": "*",
@@ -66,6 +37,30 @@
         "analyse": "php vendor/bin/phpstan analyse --memory-limit=512M",
         "test": "php -d memory_limit=512M vendor/bin/phpunit -c phpunit.xml.dist"
     },
+    "archive": {
+        "exclude": [
+            "/.aimind",
+            "/.aimind/**",
+            "/.claude",
+            "/.claude/**",
+            "/.daemon8",
+            "/.daemon8/**",
+            "/.DS_Store",
+            "/.env*",
+            "/**/.env*",
+            "/.github",
+            "/.github/**",
+            "/.idea",
+            "/.idea/**",
+            "/.phpstan-cache",
+            "/.phpstan-cache/**",
+            "/.phpunit.result.cache",
+            "/tests",
+            "/tests/**",
+            "/vendor",
+            "/vendor/**"
+        ]
+    },
     "autoload": {
         "psr-4": {
             "App\\AgentHarness\\": "app/"
@@ -79,6 +74,11 @@
     "config": {
         "allow-plugins": {
             "symfony/runtime": true
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "0.6.x-dev"
         }
     },
     "minimum-stability": "dev",
