@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\AgentHarness;
 
 use App\AgentHarness\Agents\Assistant\Agent;
-use Phalanx\Theatron\Collab\Apps\AgentHarnessBuilder;
-use Phalanx\Theatron\Collab\Prompts\FilePrompt;
+use Phalanx\Theatron\AgentHarness\Apps\AgentHarnessBuilder;
+use Phalanx\Theatron\AgentHarness\Prompts\FilePrompt;
 use Phalanx\Theatron\Theatron;
 
 final class AgentHarness

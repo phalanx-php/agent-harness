@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\AgentHarness\Agents\Assistant;
 
-use Phalanx\Theatron\Collab\Participants\AgentParticipant;
-use Phalanx\Theatron\Collab\Plans\WorkPlanItem;
-use Phalanx\Theatron\Collab\Plans\WorkResult;
-use Phalanx\Theatron\Collab\Prompts\PromptSource;
-use Phalanx\Theatron\Collab\WorkContext;
+use Phalanx\Theatron\AgentHarness\Participants\AgentParticipant;
+use Phalanx\Theatron\AgentHarness\Plans\WorkPlanItem;
+use Phalanx\Theatron\AgentHarness\Plans\WorkResult;
+use Phalanx\Theatron\AgentHarness\Prompts\PromptSource;
+use Phalanx\Theatron\AgentHarness\WorkContext;
 
 final class Agent implements AgentParticipant
 {

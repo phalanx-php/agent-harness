@@ -9,19 +9,19 @@ use App\AgentHarness\Agents\Assistant\Agent;
 use Phalanx\Scope\ExecutionScope;
 use Phalanx\Scope\TaskScope;
 use Phalanx\Testing\PhalanxTestCase;
-use Phalanx\Theatron\Collab\Apps\AgentHarnessBuilder;
-use Phalanx\Theatron\Collab\Apps\AgentHarnessRuntime;
-use Phalanx\Theatron\Collab\Boundaries\InputPromptSubmitter;
-use Phalanx\Theatron\Collab\Participants\AgentParticipant;
-use Phalanx\Theatron\Collab\Plans\Activity;
-use Phalanx\Theatron\Collab\Plans\WorkItem;
-use Phalanx\Theatron\Collab\Plans\WorkPlanItem;
-use Phalanx\Theatron\Collab\Plans\WorkPlanStatus;
-use Phalanx\Theatron\Collab\Plans\WorkResult;
-use Phalanx\Theatron\Collab\Prompts\FilePrompt;
-use Phalanx\Theatron\Collab\Prompts\PromptSource;
-use Phalanx\Theatron\Collab\State\AgentHarnessStore;
-use Phalanx\Theatron\Collab\WorkContext;
+use Phalanx\Theatron\AgentHarness\Apps\AgentHarnessBuilder;
+use Phalanx\Theatron\AgentHarness\Apps\AgentHarnessRuntime;
+use Phalanx\Theatron\AgentHarness\Boundaries\InputPromptSubmitter;
+use Phalanx\Theatron\AgentHarness\Participants\AgentParticipant;
+use Phalanx\Theatron\AgentHarness\Plans\Activity;
+use Phalanx\Theatron\AgentHarness\Plans\WorkItem;
+use Phalanx\Theatron\AgentHarness\Plans\WorkPlanItem;
+use Phalanx\Theatron\AgentHarness\Plans\WorkPlanStatus;
+use Phalanx\Theatron\AgentHarness\Plans\WorkResult;
+use Phalanx\Theatron\AgentHarness\Prompts\FilePrompt;
+use Phalanx\Theatron\AgentHarness\Prompts\PromptSource;
+use Phalanx\Theatron\AgentHarness\State\AgentHarnessStore;
+use Phalanx\Theatron\AgentHarness\WorkContext;
 use Phalanx\Theatron\Tui\Apps\TheatronApp;
 use Phalanx\Theatron\Tui\Drawing\StageConfig;
 use PHPUnit\Framework\Attributes\Group;
@@ -46,7 +46,7 @@ final class StarterSmokeTest extends PhalanxTestCase
     }
 
     #[Test]
-    public function agentImplementsCollabContract(): void
+    public function agentImplementsAgentHarnessContract(): void
     {
         self::assertInstanceOf(AgentParticipant::class, new Agent(new StarterPromptSource()));
     }
@@ -54,12 +54,13 @@ final class StarterSmokeTest extends PhalanxTestCase
     #[Test]
     public function shippedAssistantPromptFileIsExecutable(): void
     {
-        $scope = $this->createStub(TaskScope::class);
-        $scope->method('call')->willReturnCallback(static fn(\Closure $fn): mixed => $fn());
         $agent = new Agent(new FilePrompt(dirname(__DIR__) . '/app/Agents/Assistant/prompt.md'));
-        $item = WorkPlanItem::pending(new WorkItem(Activity::Thinking, 'Use shipped prompt', id: 'work_prompt'));
-        $ctx = new WorkContext($scope, new AgentHarnessStore());
-        $result = self::insideCoroutine(static fn(): WorkResult => $agent($item, $ctx));
+        $result = $this->scope->run(static function (ExecutionScope $scope) use ($agent): WorkResult {
+            $item = WorkPlanItem::pending(new WorkItem(Activity::Thinking, 'Use shipped prompt', id: 'work_prompt'));
+            $ctx = new WorkContext($scope, new AgentHarnessStore());
+
+            return $agent($item, $ctx);
+        });
 
         self::assertSame('Assistant received: Use shipped prompt', $result->summary);
         self::assertIsArray($result->payload);
@@ -134,7 +135,7 @@ final class StarterSmokeTest extends PhalanxTestCase
             $source = file_get_contents($file);
             self::assertIsString($source);
 
-            foreach (['Phalanx\\Athena\\', 'Phalanx\\Panoply\\', 'Phalanx\\Themis\\'] as $token) {
+            foreach (['Phalanx\\Athena\\', 'Phalanx\\Panoply\\', 'Phalanx\\Themis\\', 'Phalanx\\Theatron\\Collab\\'] as $token) {
                 if (str_contains($source, $token)) {
                     $offenders[] = str_replace(dirname(__DIR__) . '/', '', $file) . " contains {$token}";
                 }
@@ -188,26 +189,6 @@ final class StarterSmokeTest extends PhalanxTestCase
         self::assertIsString($source);
 
         return $source;
-    }
-
-    private static function insideCoroutine(\Closure $callback): mixed
-    {
-        $result = null;
-        $error = null;
-
-        \Swoole\Coroutine\run(static function () use ($callback, &$result, &$error): void {
-            try {
-                $result = $callback();
-            } catch (\Throwable $e) {
-                $error = $e;
-            }
-        });
-
-        if ($error !== null) {
-            throw $error;
-        }
-
-        return $result;
     }
 }
 
