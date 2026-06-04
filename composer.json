@@ -26,7 +26,7 @@
         "ext-mbstring": "*",
         "ext-pcntl": "*",
         "ext-swoole": "^6.0",
-        "phalanx-php/theatron": "^0.6",
+        "phalanx-php/phalanx": "@dev",
         "symfony/runtime": "^7.0 || ^8.0"
     },
     "require-dev": {
@@ -81,6 +81,12 @@
             "dev-main": "0.6.x-dev"
         }
     },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../../phalanx"
+        }
+    ],
     "minimum-stability": "dev",
     "prefer-stable": true
 }
