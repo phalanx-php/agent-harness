@@ -9,16 +9,16 @@ if (!is_file($autoload)) {
     $autoload = dirname(__DIR__, 3) . '/phalanx/vendor/autoload.php';
 }
 
-if (!$skipVendor && !function_exists('Phalanx\\Theatron\\Tui\\Kit\\text') && !is_file($autoload)) {
+if (!$skipVendor && !function_exists('Phalanx\\Tui\\Kit\\text') && !is_file($autoload)) {
     throw new RuntimeException('Cannot find autoload.php');
 }
 
-if (!$skipVendor && !function_exists('Phalanx\\Theatron\\Tui\\Kit\\text')) {
+if (!$skipVendor && !function_exists('Phalanx\\Tui\\Kit\\text')) {
     require $autoload;
 }
 
 spl_autoload_register(static function (string $class): void {
-    $prefix = 'App\\AgentHarness\\';
+    $prefix = 'App\\Collab\\';
     if (!str_starts_with($class, $prefix)) {
         return;
     }

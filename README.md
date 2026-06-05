@@ -1,44 +1,26 @@
-# AgentHarness
+# Collab Starter
 
-A Phalanx starter app for building terminal agent-harness tools with Theatron AgentHarness.
+Local Phalanx starter app for a Tui Collab workspace.
 
-## Layer Stack
-
-| Layer | Package | Role |
-|-------|---------|------|
-| Theatron Tui | `phalanx-php/theatron` | Terminal UI framework: screens, input, render, status bars, overlays |
-| Theatron AgentHarness | `phalanx-php/theatron` | AgentHarness builder, receive path, work loop, projections |
-
-## Boot Path
-
-```
-bin/agent-harness (symfony/runtime)
-  -> AgentHarness::app($context)
-    -> Theatron::agentHarness($context) -> AgentHarnessBuilder
-      -> primary(new Agent(new FilePrompt(...)))
-    -> AgentHarnessBuilder->run()
-```
-
-## Run
+## Local Install
 
 ```bash
 composer install
-php bin/agent-harness
+composer test
 ```
 
-## Config
-
-No required environment values for the starter.
+This starter uses a local Composer path repository pointing at `../../phalanx`. It is not a Packagist install path yet.
 
 ## Project Shape
 
-```
-bin/agent-harness                          - entry point (symfony/runtime)
-app/AgentHarness.php                 - app factory
-app/Agents/Assistant/Agent.php      - AgentHarness participant
-app/Agents/Assistant/prompt.md      - agent system prompt
+```text
+app/Collab.php
+app/Agents/Assistant/Agent.php
+app/Agents/Assistant/prompt.md
+config/phalanx.toml
+tests/StarterSmokeTest.php
 ```
 
-## Theatron
+## App Factory
 
-The UI is the default AgentHarness workspace. User input goes through `InputComposer`, into the receive path, then through the AgentHarness loop and store projection.
+`Collab::app($context)` builds the current `Phalanx\Tui\Collab` workspace with the starter assistant as the primary participant.

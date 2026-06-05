@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\AgentHarness\Agents\Assistant;
+namespace App\Collab\Agents\Assistant;
 
-use Phalanx\Theatron\AgentHarness\Participants\AgentParticipant;
-use Phalanx\Theatron\AgentHarness\Plans\WorkPlanItem;
-use Phalanx\Theatron\AgentHarness\Plans\WorkResult;
-use Phalanx\Theatron\AgentHarness\Prompts\PromptSource;
-use Phalanx\Theatron\AgentHarness\WorkContext;
+use Phalanx\Tui\Collab\Participants\AgentParticipant;
+use Phalanx\Tui\Collab\Plans\WorkPlanItem;
+use Phalanx\Tui\Collab\Plans\WorkResult;
+use Phalanx\Tui\Collab\Prompts\PromptSource;
+use Phalanx\Tui\Collab\WorkContext;
 
 final class Agent implements AgentParticipant
 {

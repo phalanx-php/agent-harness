@@ -1,33 +1,27 @@
 {
-    "name": "phalanx-php/agent-harness-starter",
-    "description": "Phalanx AgentHarness starter kit",
+    "name": "phalanx-php/collab-starter",
+    "description": "Phalanx Collab starter kit",
     "type": "project",
     "license": "MIT",
     "keywords": [
         "agent",
-        "agent-harness",
+        "collab",
         "phalanx",
         "swoole",
         "tui"
     ],
-    "homepage": "https://github.com/phalanx-php/agent-harness-starter",
     "authors": [
         {
             "name": "Jonathan Havens",
             "email": "mail@phalanx-php.com"
         }
     ],
-    "support": {
-        "source": "https://github.com/phalanx-php/agent-harness-starter"
-    },
-    "bin": ["bin/agent-harness"],
     "require": {
         "php": "^8.4",
         "ext-mbstring": "*",
         "ext-pcntl": "*",
         "ext-swoole": "^6.0",
-        "phalanx-php/phalanx": "@dev",
-        "symfony/runtime": "^7.0 || ^8.0"
+        "phalanx-php/phalanx": "0.7.x-dev"
     },
     "require-dev": {
         "phpstan/phpstan": "^2.0",
@@ -37,54 +31,31 @@
         "analyse": "php vendor/bin/phpstan analyse --memory-limit=512M",
         "test": "php -d memory_limit=512M vendor/bin/phpunit -c phpunit.xml.dist"
     },
-    "archive": {
-        "exclude": [
-            "/.aimind",
-            "/.aimind/**",
-            "/.claude",
-            "/.claude/**",
-            "/.daemon8",
-            "/.daemon8/**",
-            "/.DS_Store",
-            "/.env*",
-            "/**/.env*",
-            "/.github",
-            "/.github/**",
-            "/.idea",
-            "/.idea/**",
-            "/.phpstan-cache",
-            "/.phpstan-cache/**",
-            "/.phpunit.result.cache",
-            "/tests",
-            "/tests/**",
-            "/vendor",
-            "/vendor/**"
-        ]
-    },
     "autoload": {
         "psr-4": {
-            "App\\AgentHarness\\": "app/"
+            "App\\Collab\\": "app/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "App\\AgentHarness\\Tests\\": "tests/"
-        }
-    },
-    "config": {
-        "allow-plugins": {
-            "symfony/runtime": true
+            "App\\Collab\\Tests\\": "tests/"
         }
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "0.6.x-dev"
+            "dev-main": "0.7.x-dev"
         }
     },
     "repositories": [
         {
             "type": "path",
-            "url": "../../phalanx"
+            "url": "../../phalanx",
+            "options": {
+                "symlink": true,
+                "versions": {
+                    "phalanx-php/phalanx": "0.7.x-dev"
+                }
+            }
         }
     ],
     "minimum-stability": "dev",
