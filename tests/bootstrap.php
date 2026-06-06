@@ -18,7 +18,7 @@ if (!$skipVendor && !function_exists('Phalanx\\Tui\\Kit\\text')) {
 }
 
 spl_autoload_register(static function (string $class): void {
-    $prefix = 'App\\Collab\\';
+    $prefix = 'App\\AgentHarness\\';
     if (!str_starts_with($class, $prefix)) {
         return;
     }

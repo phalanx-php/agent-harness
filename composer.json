@@ -1,11 +1,11 @@
 {
-    "name": "phalanx-php/collab-starter",
-    "description": "Phalanx Collab starter kit",
+    "name": "phalanx-php/agent-harness",
+    "description": "Phalanx Agent Harness starter kit",
     "type": "project",
     "license": "MIT",
     "keywords": [
         "agent",
-        "collab",
+        "agent-harness",
         "phalanx",
         "swoole",
         "tui"
@@ -33,12 +33,12 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\Collab\\": "app/"
+            "App\\AgentHarness\\": "app/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "App\\Collab\\Tests\\": "tests/"
+            "App\\AgentHarness\\Tests\\": "tests/"
         }
     },
     "extra": {

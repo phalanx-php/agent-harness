@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Collab\Agents\Assistant;
+namespace App\AgentHarness\Agents\Assistant;
 
-use Phalanx\Tui\Collab\Participants\AgentParticipant;
-use Phalanx\Tui\Collab\Plans\WorkPlanItem;
-use Phalanx\Tui\Collab\Plans\WorkResult;
-use Phalanx\Tui\Collab\Prompts\PromptSource;
-use Phalanx\Tui\Collab\WorkContext;
+use Phalanx\Tui\Runtime\Participants\AgentParticipant;
+use Phalanx\Tui\Runtime\Plans\WorkPlanItem;
+use Phalanx\Tui\Runtime\Plans\WorkResult;
+use Phalanx\Tui\Runtime\Prompts\PromptSource;
+use Phalanx\Tui\Runtime\WorkContext;
 
 final class Agent implements AgentParticipant
 {
@@ -25,7 +25,7 @@ final class Agent implements AgentParticipant
     ) {
     }
 
-    public function __invoke(WorkPlanItem $item, WorkContext $ctx): WorkResult
+    public function __invoke(WorkContext $ctx, WorkPlanItem $item): WorkResult
     {
         return WorkResult::done(
             itemId: $item->workItem->id,
@@ -38,7 +38,7 @@ final class Agent implements AgentParticipant
         );
     }
 
-    public function supports(WorkPlanItem $item, WorkContext $ctx): bool
+    public function supports(WorkContext $ctx, WorkPlanItem $item): bool
     {
         return true;
     }

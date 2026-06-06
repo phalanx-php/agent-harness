@@ -2,32 +2,34 @@
 
 declare(strict_types=1);
 
-namespace App\Collab\Tests;
+namespace App\AgentHarness\Tests;
 
-use App\Collab\Agents\Assistant\Agent;
-use App\Collab\Collab;
+use App\AgentHarness\AgentHarness;
+use App\AgentHarness\Agents\Assistant\Agent;
 use Phalanx\Scope\ExecutionScope;
 use Phalanx\Scope\TaskScope;
 use Phalanx\Testing\PhalanxTestCase;
 use Phalanx\Tui\Apps\App;
-use Phalanx\Tui\Collab\Apps\Builder;
-use Phalanx\Tui\Collab\Apps\Runtime;
-use Phalanx\Tui\Collab\Boundaries\InputPromptSubmitter;
-use Phalanx\Tui\Collab\Participants\AgentParticipant;
-use Phalanx\Tui\Collab\Plans\Activity;
-use Phalanx\Tui\Collab\Plans\WorkItem;
-use Phalanx\Tui\Collab\Plans\WorkPlanItem;
-use Phalanx\Tui\Collab\Plans\WorkPlanStatus;
-use Phalanx\Tui\Collab\Plans\WorkResult;
-use Phalanx\Tui\Collab\Prompts\FilePrompt;
-use Phalanx\Tui\Collab\Prompts\PromptSource;
-use Phalanx\Tui\Collab\State\Store;
-use Phalanx\Tui\Collab\WorkContext;
+use Phalanx\Tui\Drawing\ScreenMode;
 use Phalanx\Tui\Drawing\StageConfig;
+use Phalanx\Tui\Runtime\Apps\Application;
+use Phalanx\Tui\Runtime\Apps\Builder;
+use Phalanx\Tui\Runtime\Apps\Runtime;
+use Phalanx\Tui\Runtime\Boundaries\InputPromptSubmitter;
+use Phalanx\Tui\Runtime\Participants\AgentParticipant;
+use Phalanx\Tui\Runtime\Plans\Activity;
+use Phalanx\Tui\Runtime\Plans\WorkItem;
+use Phalanx\Tui\Runtime\Plans\WorkPlanItem;
+use Phalanx\Tui\Runtime\Plans\WorkPlanStatus;
+use Phalanx\Tui\Runtime\Plans\WorkResult;
+use Phalanx\Tui\Runtime\Prompts\FilePrompt;
+use Phalanx\Tui\Runtime\Prompts\PromptSource;
+use Phalanx\Tui\Runtime\State\Store;
+use Phalanx\Tui\Runtime\WorkContext;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 
-#[Group('collab')]
+#[Group('agent-harness')]
 final class StarterSmokeTest extends PhalanxTestCase
 {
     #[Test]
@@ -36,17 +38,17 @@ final class StarterSmokeTest extends PhalanxTestCase
         $agent = new Agent(new StarterPromptSource());
         $item = WorkPlanItem::pending(new WorkItem(Activity::Thinking, 'Draft a plan', id: 'work_test'));
         $ctx = new WorkContext($this->createStub(TaskScope::class), new Store());
-        $result = $agent($item, $ctx);
+        $result = $agent($ctx, $item);
 
         self::assertSame('assistant', $agent->id);
         self::assertSame('Assistant', $agent->name);
         self::assertSame('Assistant received: Draft a plan', $result->summary);
         self::assertIsArray($result->payload);
-        self::assertSame('Phalanx Collab instructions', $result->payload['prompt']);
+        self::assertSame('Phalanx Agent Harness instructions', $result->payload['prompt']);
     }
 
     #[Test]
-    public function agentImplementsCollabContract(): void
+    public function agentImplementsRuntimeContract(): void
     {
         self::assertInstanceOf(AgentParticipant::class, new Agent(new StarterPromptSource()));
     }
@@ -59,7 +61,7 @@ final class StarterSmokeTest extends PhalanxTestCase
             $item = WorkPlanItem::pending(new WorkItem(Activity::Thinking, 'Use shipped prompt', id: 'work_prompt'));
             $ctx = new WorkContext($scope, new Store());
 
-            return $agent($item, $ctx);
+            return $agent($ctx, $item);
         });
 
         self::assertSame('Assistant received: Use shipped prompt', $result->summary);
@@ -69,45 +71,30 @@ final class StarterSmokeTest extends PhalanxTestCase
     }
 
     #[Test]
-    public function appFactoryBuildsCollabBuilder(): void
+    public function appFactoryBuildsRuntimeBuilder(): void
     {
-        self::assertInstanceOf(Builder::class, Collab::app());
+        self::assertInstanceOf(Builder::class, AgentHarness::app());
     }
 
     #[Test]
-    public function appFactoryBuildProducesTuiApp(): void
+    public function appFactoryBuildProducesRuntimeApplication(): void
     {
-        $stream = fopen('php://memory', 'w+');
-        self::assertIsResource($stream);
+        $app = AgentHarness::app()
+            ->stageConfig(self::stageConfig())
+            ->build();
 
-        $app = Collab::app();
-        $app->stageConfig(new StageConfig(
-            handleInput: false,
-            defaultExitHandler: false,
-            stream: $stream,
-            env: ['COLUMNS' => '80', 'LINES' => '24'],
-        ));
-
-        self::assertInstanceOf(App::class, $app->build());
+        self::assertInstanceOf(Application::class, $app);
+        self::assertInstanceOf(App::class, $app->tui());
     }
 
     #[Test]
     public function appFactoryRuntimeAcceptsInputAndProjectsCompletionState(): void
     {
-        $stream = fopen('php://memory', 'w+');
-        self::assertIsResource($stream);
-
-        $builder = Collab::app(['APP_ENV' => 'test']);
-        $builder->stageConfig(new StageConfig(
-            handleInput: false,
-            defaultExitHandler: false,
-            stream: $stream,
-            env: ['COLUMNS' => '80', 'LINES' => '24'],
-        ));
+        $builder = AgentHarness::app(['APP_ENV' => 'test'])
+            ->stageConfig(self::stageConfig());
         $app = $builder->build();
-        $testApp = $this->testApp([], ...$builder->resolvedProviders($app));
 
-        $testApp->application->scoped(static function (ExecutionScope $scope): void {
+        $app->runtime()->run(static function (ExecutionScope $scope): void {
             $submit = $scope->service(InputPromptSubmitter::class);
             $runtime = $scope->service(Runtime::class);
             $store = $scope->service(Store::class);
@@ -189,6 +176,19 @@ final class StarterSmokeTest extends PhalanxTestCase
 
         return $source;
     }
+
+    private static function stageConfig(): StageConfig
+    {
+        $stream = fopen('php://memory', 'w+');
+        self::assertIsResource($stream);
+
+        return new StageConfig(
+            screenMode: ScreenMode::Inline,
+            handleInput: false,
+            stream: $stream,
+            env: ['COLUMNS' => '80', 'LINES' => '24'],
+        );
+    }
 }
 
 final class StarterPromptSource implements PromptSource
@@ -199,6 +199,6 @@ final class StarterPromptSource implements PromptSource
 
     public function __invoke(TaskScope $scope): string
     {
-        return 'Phalanx Collab instructions';
+        return 'Phalanx Agent Harness instructions';
     }
 }
