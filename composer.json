@@ -29,6 +29,7 @@
     },
     "scripts": {
         "analyse": "php vendor/bin/phpstan analyse --memory-limit=512M",
+        "release:check": "php tools/release-composer-check.php",
         "test": "php -d memory_limit=512M vendor/bin/phpunit -c phpunit.xml.dist"
     },
     "autoload": {
