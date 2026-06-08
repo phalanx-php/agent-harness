@@ -8,10 +8,11 @@ Local Phalanx starter app for a Tui runtime workspace.
 composer install
 composer test
 composer release:check
+composer release:composer
 ```
 
 This starter uses a local Composer path repository pointing at `../../phalanx`. It is not a Packagist install path yet.
-`composer release:check` validates the local path repository and the publish-ready Composer metadata dry run.
+`composer release:composer` prints the publish-ready Composer metadata. `composer release:check` validates the local path repository and release metadata.
 
 ## Project Shape
 

@@ -10,7 +10,7 @@ use Phalanx\Tui\Runtime\Plans\WorkResult;
 use Phalanx\Tui\Runtime\Prompts\PromptSource;
 use Phalanx\Tui\Runtime\WorkContext;
 
-final class Agent implements AgentParticipant
+class Agent implements AgentParticipant
 {
     public string $id {
         get => 'assistant';

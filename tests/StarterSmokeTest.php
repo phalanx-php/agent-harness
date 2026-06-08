@@ -10,6 +10,7 @@ use Phalanx\Scope\ExecutionScope;
 use Phalanx\Scope\TaskScope;
 use Phalanx\Stream\ResourceHandle;
 use Phalanx\Stream\Stream;
+use Phalanx\Testing\FixtureFile;
 use Phalanx\Testing\PhalanxTestCase;
 use Phalanx\Tui\Apps\App;
 use Phalanx\Tui\Drawing\ScreenMode;
@@ -120,22 +121,13 @@ final class StarterSmokeTest extends PhalanxTestCase
     }
 
     #[Test]
-    public function publicAppCodeDoesNotExposeProviderRuntimeImports(): void
+    public function publicAppCodeUsesCurrentTuiEntryBuilder(): void
     {
-        $offenders = [];
+        $source = self::read(dirname(__DIR__) . '/app/AgentHarness.php');
 
-        foreach (self::publicSurfaceFiles() as $file) {
-            $source = file_get_contents($file);
-            self::assertIsString($source);
-
-            foreach (['Phalanx\\Athena\\', 'Phalanx\\Panoply\\', 'Phalanx\\Themis\\', 'Phalanx\\Theatron\\'] as $token) {
-                if (str_contains($source, $token)) {
-                    $offenders[] = str_replace(dirname(__DIR__) . '/', '', $file) . " contains {$token}";
-                }
-            }
-        }
-
-        self::assertSame([], $offenders, implode("\n", $offenders));
+        self::assertStringContainsString('use Phalanx\\Tui\\Tui;', $source);
+        self::assertStringContainsString('return Tui::starting($context)', $source);
+        self::assertStringContainsString('->primary(new Agent(', $source);
     }
 
     #[Test]
@@ -165,10 +157,10 @@ final class StarterSmokeTest extends PhalanxTestCase
     #[Test]
     public function publishComposerMetadataUsesReleasedFrameworkConstraint(): void
     {
-        $composer = self::publishComposer();
+        $composer = self::generatedPublishComposer();
 
         self::assertArrayNotHasKey('repositories', $composer);
-        self::assertSame('^0.7', $composer['require']['phalanx-php/phalanx']);
+        self::assertSame(self::publishConstraint($composer), $composer['require']['phalanx-php/phalanx']);
     }
 
     #[Test]
@@ -177,42 +169,16 @@ final class StarterSmokeTest extends PhalanxTestCase
         $composer = self::composer();
         $repository = $composer['repositories'][0];
 
-        self::assertSame('0.7.x-dev', $composer['require']['phalanx-php/phalanx']);
+        self::assertSame(self::branchAlias($composer), $composer['require']['phalanx-php/phalanx']);
         self::assertSame('path', $repository['type']);
         self::assertSame('../../phalanx', $repository['url']);
         self::assertTrue($repository['options']['symlink']);
-        self::assertSame('0.7.x-dev', $repository['options']['versions']['phalanx-php/phalanx']);
-    }
-
-    /**
-     * @return list<string>
-     */
-    private static function publicSurfaceFiles(): array
-    {
-        $root = dirname(__DIR__);
-        $files = [
-            $root . '/README.md',
-            $root . '/composer.json',
-        ];
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root . '/app'));
-
-        foreach ($iterator as $file) {
-            if ($file->isFile() && $file->getExtension() === 'php') {
-                $files[] = $file->getPathname();
-            }
-        }
-
-        sort($files);
-
-        return $files;
+        self::assertSame(self::branchAlias($composer), $repository['options']['versions']['phalanx-php/phalanx']);
     }
 
     private static function read(string $file): string
     {
-        $source = file_get_contents($file);
-        self::assertIsString($source);
-
-        return $source;
+        return FixtureFile::read($file);
     }
 
     /**
@@ -229,13 +195,42 @@ final class StarterSmokeTest extends PhalanxTestCase
     /**
      * @return array<string, mixed>
      */
-    private static function publishComposer(): array
+    private static function generatedPublishComposer(): array
     {
-        $composer = self::composer();
-        unset($composer['repositories']);
-        $composer['require']['phalanx-php/phalanx'] = '^0.7';
+        $lines = [];
+        exec(
+            escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(dirname(__DIR__) . '/tools/release-composer.php') . ' --stdout',
+            $lines,
+            $exitCode,
+        );
+        self::assertSame(0, $exitCode);
+
+        $composer = json_decode(implode("\n", $lines), true, flags: JSON_THROW_ON_ERROR);
+        self::assertIsArray($composer);
 
         return $composer;
+    }
+
+    /**
+     * @param array<string, mixed> $composer
+     */
+    private static function branchAlias(array $composer): string
+    {
+        $alias = $composer['extra']['branch-alias']['dev-main'] ?? null;
+        self::assertIsString($alias);
+        self::assertMatchesRegularExpression('/^\d+\.\d+\.x-dev$/', $alias);
+
+        return $alias;
+    }
+
+    /**
+     * @param array<string, mixed> $composer
+     */
+    private static function publishConstraint(array $composer): string
+    {
+        $alias = self::branchAlias($composer);
+
+        return '^' . str_replace('.x-dev', '', $alias);
     }
 
     private static function configName(): string

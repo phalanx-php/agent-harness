@@ -9,7 +9,7 @@ use Phalanx\Tui\Runtime\Apps\Builder;
 use Phalanx\Tui\Runtime\Prompts\FilePrompt;
 use Phalanx\Tui\Tui;
 
-final class AgentHarness
+class AgentHarness
 {
     /** @param array<string, mixed> $context */
     public static function app(array $context = []): Builder

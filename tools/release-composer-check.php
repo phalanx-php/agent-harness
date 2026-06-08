@@ -2,23 +2,28 @@
 
 declare(strict_types=1);
 
-final class AgentHarnessReleaseComposerCheck
+require_once __DIR__ . '/ReleaseComposer.php';
+
+class AgentHarnessReleaseComposerCheck
 {
     /** @var list<string> */
     private array $errors = [];
 
+    private AgentHarnessReleaseComposer $release;
+
     public function __construct(
-        private readonly string $root,
+        string $root,
     ) {
+        $this->release = new AgentHarnessReleaseComposer($root);
     }
 
     public function __invoke(): int
     {
-        $composer = $this->composer();
+        $composer = $this->release->localComposer();
 
         $this->assertCanonicalIdentity($composer);
         $this->assertLocalPathRepository($composer);
-        $this->assertPublishMetadata($this->publishComposer($composer));
+        $this->assertPublishMetadata($this->release->publishComposer());
 
         if ($this->errors === []) {
             fwrite(STDOUT, "Agent Harness Composer release checks passed.\n");
@@ -54,8 +59,15 @@ final class AgentHarnessReleaseComposerCheck
      */
     private function assertLocalPathRepository(array $composer): void
     {
-        if (($composer['require']['phalanx-php/phalanx'] ?? null) !== '0.7.x-dev') {
-            $this->errors[] = 'Local composer.json must require phalanx-php/phalanx at 0.7.x-dev.';
+        $branchAlias = $this->release->branchAlias($composer);
+        if ($branchAlias === null) {
+            $this->errors[] = 'Branch alias must be defined as MAJOR.MINOR.x-dev.';
+
+            return;
+        }
+
+        if (($composer['require']['phalanx-php/phalanx'] ?? null) !== $branchAlias) {
+            $this->errors[] = "Local composer.json must require phalanx-php/phalanx at {$branchAlias}.";
         }
 
         $repositories = $composer['repositories'] ?? [];
@@ -78,8 +90,8 @@ final class AgentHarnessReleaseComposerCheck
             $this->errors[] = 'Local Phalanx repository must symlink source packages.';
         }
 
-        if (($repository['options']['versions']['phalanx-php/phalanx'] ?? null) !== '0.7.x-dev') {
-            $this->errors[] = 'Local Phalanx path version must be 0.7.x-dev.';
+        if (($repository['options']['versions']['phalanx-php/phalanx'] ?? null) !== $branchAlias) {
+            $this->errors[] = "Local Phalanx path version must be {$branchAlias}.";
         }
     }
 
@@ -88,53 +100,20 @@ final class AgentHarnessReleaseComposerCheck
      */
     private function assertPublishMetadata(array $composer): void
     {
+        $publishConstraint = $this->release->publishConstraint($composer);
+        if ($publishConstraint === null) {
+            $this->errors[] = 'Publish constraint could not be derived from branch alias.';
+
+            return;
+        }
+
         if (array_key_exists('repositories', $composer)) {
             $this->errors[] = 'Publish metadata must not include local repositories.';
         }
 
-        if (($composer['require']['phalanx-php/phalanx'] ?? null) !== '^0.7') {
-            $this->errors[] = 'Publish metadata must require phalanx-php/phalanx at ^0.7.';
+        if (($composer['require']['phalanx-php/phalanx'] ?? null) !== $publishConstraint) {
+            $this->errors[] = "Publish metadata must require phalanx-php/phalanx at {$publishConstraint}.";
         }
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function composer(): array
-    {
-        $composer = json_decode(
-            $this->read($this->root . '/composer.json'),
-            true,
-            flags: JSON_THROW_ON_ERROR,
-        );
-
-        if (!is_array($composer)) {
-            throw new RuntimeException('composer.json did not decode to an object.');
-        }
-
-        return $composer;
-    }
-
-    /**
-     * @param array<string, mixed> $composer
-     * @return array<string, mixed>
-     */
-    private function publishComposer(array $composer): array
-    {
-        unset($composer['repositories']);
-        $composer['require']['phalanx-php/phalanx'] = '^0.7';
-
-        return $composer;
-    }
-
-    private function read(string $path): string
-    {
-        $contents = file_get_contents($path);
-        if (!is_string($contents)) {
-            throw new RuntimeException("Unable to read {$path}");
-        }
-
-        return $contents;
     }
 }
 
