@@ -4,17 +4,13 @@ declare(strict_types=1);
 
 namespace App\AgentHarness;
 
-use App\AgentHarness\Agents\Assistant\Agent;
-use Phalanx\Tui\Runtime\Apps\Builder;
-use Phalanx\Tui\Runtime\Prompts\FilePrompt;
-use Phalanx\Tui\Tui;
+use Phalanx\Bootstrap\BootstrapContract;
+use Phalanx\Phalanx;
 
 class AgentHarness
 {
-    /** @param array<string, mixed> $context */
-    public static function app(array $context = []): Builder
+    public static function bootstrapContract(): BootstrapContract
     {
-        return Tui::starting($context)
-            ->primary(new Agent(new FilePrompt(__DIR__ . '/Agents/Assistant/prompt.md')));
+        return Phalanx::bootstrapContract();
     }
 }

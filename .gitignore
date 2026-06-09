@@ -3,6 +3,5 @@
 !.gitignore
 !.env.example
 !README.md
-!app/Agents/**/prompt.md
 /composer.lock
 /vendor/

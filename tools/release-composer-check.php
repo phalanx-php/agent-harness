@@ -66,8 +66,9 @@ class AgentHarnessReleaseComposerCheck
             return;
         }
 
-        if (($composer['require']['phalanx-php/phalanx'] ?? null) !== $branchAlias) {
-            $this->errors[] = "Local composer.json must require phalanx-php/phalanx at {$branchAlias}.";
+        $localConstraint = $this->release->publishConstraint($composer) . '@dev';
+        if (($composer['require']['phalanx-php/phalanx'] ?? null) !== $localConstraint) {
+            $this->errors[] = "Local composer.json must require phalanx-php/phalanx at {$localConstraint}.";
         }
 
         $repositories = $composer['repositories'] ?? [];

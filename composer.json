@@ -6,9 +6,8 @@
     "keywords": [
         "agent",
         "agent-harness",
-        "phalanx",
-        "swoole",
-        "tui"
+        "bootstrap",
+        "phalanx"
     ],
     "authors": [
         {
@@ -18,10 +17,7 @@
     ],
     "require": {
         "php": "^8.4",
-        "ext-mbstring": "*",
-        "ext-pcntl": "*",
-        "ext-swoole": "^6.0",
-        "phalanx-php/phalanx": "0.7.x-dev"
+        "phalanx-php/phalanx": "^2.0@dev"
     },
     "require-dev": {
         "phpstan/phpstan": "^2.0",
@@ -45,7 +41,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "0.7.x-dev"
+            "dev-main": "2.0.x-dev"
         }
     },
     "repositories": [
@@ -55,7 +51,7 @@
             "options": {
                 "symlink": true,
                 "versions": {
-                    "phalanx-php/phalanx": "0.7.x-dev"
+                    "phalanx-php/phalanx": "2.0.x-dev"
                 }
             }
         }

@@ -1,6 +1,6 @@
 # Agent Harness
 
-Local Phalanx starter app for a Tui runtime workspace.
+Local Phalanx starter app for the v2 bootstrap contract.
 
 ## Local Install
 
@@ -18,12 +18,10 @@ This starter uses a local Composer path repository pointing at `../../phalanx`. 
 
 ```text
 app/AgentHarness.php
-app/Agents/Assistant/Agent.php
-app/Agents/Assistant/prompt.md
 config/phalanx.toml
 tests/StarterSmokeTest.php
 ```
 
-## App Factory
+## Bootstrap Contract
 
-`AgentHarness::app($context)` builds the current `Phalanx\Tui\Runtime` workspace through `Tui::starting()` with the starter assistant as the primary participant.
+`AgentHarness::bootstrapContract()` returns the public `Phalanx\Phalanx::bootstrapContract()` value.
