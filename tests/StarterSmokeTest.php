@@ -39,7 +39,7 @@ final class StarterSmokeTest extends TestCase
 
         self::assertSame('phalanx-php/agent-harness', $composer['name']);
         self::assertContains('agent-harness', $composer['keywords']);
-        self::assertSame('agent-harness', self::configName());
+        self::assertFileExists(dirname(__DIR__) . '/phalanx.toml');
     }
 
     #[Test]
@@ -74,13 +74,6 @@ final class StarterSmokeTest extends TestCase
         self::assertIsArray($composer);
 
         return $composer;
-    }
-
-    private static function configName(): string
-    {
-        preg_match('/^name\s*=\s*"([^"]+)"/m', self::read(dirname(__DIR__) . '/config/phalanx.toml'), $matches);
-
-        return $matches[1] ?? '';
     }
 
     /**

@@ -18,7 +18,7 @@ This starter uses a local Composer path repository pointing at `../../phalanx`. 
 
 ```text
 app/AgentHarness.php
-config/phalanx.toml
+phalanx.toml
 tests/StarterSmokeTest.php
 ```
 
